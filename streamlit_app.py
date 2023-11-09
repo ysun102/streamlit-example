@@ -2,39 +2,37 @@ import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
+import os
+import openai
 
-"""
-# Welcome to Streamlit!
+openai.api_key = "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"
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
-
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
-
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
-
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
-
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
-
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
-
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+# Create title and logo
+st.title("Chatbot")
+st.image("logo.png")
+# Create sidebar for settings
+sidebar = st.sidebar
+# Create a dropdown menu for selecting the model
+model = sidebar.selectbox(
+    "Select the language model",
+    ("gpt-3.5-turbo", "gpt-4.0-turbo")
+)
+# Create a slider for adjusting the temperature
+temperature = sidebar.slider(
+    "Adjust the temperature",
+    0.0, 1.0, 0.7, 0.01
+)
+# Create a text input for user message
+user_message = st.text_input("User")
+# Create a button for generating chatbot response
+if st.button("Send"):
+    # Generate chatbot response using OpenAI API
+    response = openai.Completion.create(
+        model=model,
+        prompt=f"User: {user_message}\nChatbot:",
+        temperature=temperature,
+        max_tokens=50,
+        stop="\n"
+    )
+    # Display chatbot response
+    st.write(f"Chatbot: {response['choices'][0]['text']}")
